@@ -1,63 +1,66 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
+'use client'
 import Image from 'next/image';
 import { getPokemons } from '../@core/services/pokemon/get-pokemons';
 import { Card, CardContent, CardDescription, CardTitle } from '#/src/components/ui/card';
-import { Popover, PopoverContent, PopoverTrigger } from '#/src/components/ui/popover';
-import { Button } from '#/src/components/ui/button';
-import { getGenerations } from '../@core/services/pokemon/get-generations';
-import { formatarGeracaoPokemon, formatarNomeJogo } from '#/src/lib/regex.util';
-import { BadgeJogosGeracao } from '#/src/components/badge-jogos-geracao';
 import { BadgeTipos } from '#/src/components/badge-tipos';
-import { Generation, Pokemon } from 'pokenode-ts';
-import { Input } from '#/src/components/ui/input';
-import { Search } from 'lucide-react';
+import { LabelLogo } from '#/src/components/label-logo';
+import { DropdownTheme } from '#/src/components/theme/dropdown-theme';
+import { FilterGeracoes } from '#/src/components/filter-geracoes';
+import { InputPesquisaPokemon } from '#/src/components/input-pesquisa-pokemon';
+import { Pokemon } from 'pokenode-ts';
+import { useEffect, useMemo, useState } from 'react';
+import { LoaderCircle } from 'lucide-react';
 
-export default async function Page() {
+export default function Page() {
+  const [ pokemons, setPokemons ] = useState<Pokemon[]>([])
+  const [ offset, setOffset ] = useState(0);
+  const [ listaAcabou, setListaAcabou ] = useState(false)
+  const [ loading, setLoading ] = useState(false)
+  const limit = 200;
 
-  const pokemons = await getPokemons()
-  // const pokemons: Pokemon[] = []
-  const generations = await getGenerations()
-  // const generations: Generation[] = []
+  const fetchAllPokemons = useMemo(
+    () => {
+      return async () => {
+        setLoading(true)
+        await getPokemons(offset, limit)
+        .then((res) => {
+          if (res.length === 0)
+            setListaAcabou(true)
+          setPokemons([ ...pokemons, ...res])
+          setLoading(false)
+        })
+      }
+    }
+    , [offset]
+  ) 
+  
+  useEffect(() => {
+    fetchAllPokemons()
+  }, [offset])
+
+  const handleScroll = () => {
+    if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight) {
+      setOffset((prevOffset) => prevOffset + limit);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   return (
-    <div className='px-2'>
+    <div className='px-2 mt-2'>
+      <div className="flex justify-between">
+        <LabelLogo />
+        <DropdownTheme />
+      </div>
       <div className='my-6 flex gap-4'>
-        <Popover>
-          <PopoverTrigger>
-            <Button variant='secondary'>
-              TODAS GERAÇÕES
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align='start' className='w-[700px]' asChild>
-            <div className='grid grid-cols-4 gap-2'>
-              {
-                generations.map((g) => {
-                  return (
-                    <Card key={g.id} className='col-span-2 p-2'>
-                        <CardDescription>
-                          {formatarGeracaoPokemon(g.name)}
-                        </CardDescription>
-                        <div className='flex flex-wrap my-2 gap-2'>
-                          {
-                            g.version_groups.map((v) => {
-                              return <BadgeJogosGeracao 
-                                key={v.name}
-                                variant={v.name}
-                              >{formatarNomeJogo(v.name)}</BadgeJogosGeracao>
-                            })
-                          }
-                        </div>
-                    </Card>
-                  )
-                })
-              }
-            </div>
-          </PopoverContent>
-        </Popover>
-        <div className='max-w-72 flex items-center gap-4'>
-          <Search />
-          <Input placeholder='busque por nome'/>
-        </div>
+        <FilterGeracoes />
+        <InputPesquisaPokemon />
       </div>
       <div className='grid grid-cols-12 gap-4'>
         {
@@ -85,6 +88,11 @@ export default async function Page() {
             )
           })
         }
+        { (!listaAcabou && loading) && (
+          <div className='col-span-12 my-2 flex justify-center'>
+            <LoaderCircle className='w-20 h-20 animate-spin text-primary' />
+          </div>
+        ) }
       </div>
     </div>
   )
