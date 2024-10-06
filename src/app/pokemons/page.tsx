@@ -78,7 +78,9 @@ export default function Page() {
                     <CardTitle>{p.name.charAt(0).toUpperCase() + p.name.slice(1)}</CardTitle>
                     <div className='flex flex-wrap gap-2 mt-2'>
                       { 
-                        p.types.map((t) => <BadgeTipos key={t.type.name} variant={t.type.name}>{t.type.name.toUpperCase()}</BadgeTipos>)
+                        p.types.map((t) => 
+                          // @ts-ignore
+                          <BadgeTipos key={t.type.name} variant={t.type.name}>{t.type.name.toUpperCase()}</BadgeTipos>)
                       }
                     </div>
                     <CardDescription></CardDescription>

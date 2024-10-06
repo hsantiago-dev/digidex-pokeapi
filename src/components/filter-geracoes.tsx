@@ -49,6 +49,7 @@ export function FilterGeracoes() {
                         g.version_groups.map((v) => {
                           return <BadgeJogosGeracao 
                             key={v.name}
+                            // @ts-ignore
                             variant={v.name}
                           >{formatarNomeJogo(v.name)}</BadgeJogosGeracao>
                         })
