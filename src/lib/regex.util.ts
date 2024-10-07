@@ -39,3 +39,11 @@ export function formatarNomeJogo(text: string): string {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' / ');
 }
+
+export function formatarNomePokemon(nome: string) {
+
+  return nome
+  .split('-')
+  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+  .join(' ');
+}

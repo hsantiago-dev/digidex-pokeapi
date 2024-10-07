@@ -10,14 +10,21 @@ export async function getPokemons(offset?: number, limit?: number): Promise<Poke
     return []
   })
 
-  console.log(apiResponse)
-
   const resourceList = apiResponse as NamedAPIResourceList
 
   return await Promise.all(
     resourceList.results.map(async (p) => {
       const id = getIdFromUrl(p.url)
       return await api.getPokemonById(id)
+    })
+  )
+}
+
+export async function getPokemonsByNames(names: string[]): Promise<Pokemon[]> {
+
+  return await Promise.all(
+    names.map(async (name) => {
+      return await api.getPokemonByName(name)
     })
   )
 }
