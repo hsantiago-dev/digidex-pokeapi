@@ -32,17 +32,26 @@ export function InputPesquisaPokemon({ searchComplete } : InputPesquisaPokemonPr
     setSearchTerm(value);
   }, 1000);
 
-  const fetchPokemonsByNames = async () => {
-    const arraySearch = filterPokemonsNames(searchTerm)
-    const pokemons = await getPokemonsByNames(arraySearch)
-    
-    searchComplete(pokemons)
-    setLoading(false)
-  }
-
   useEffect(() => {
+    let isCancelled = false;
+
+    const fetchPokemonsByNames = async () => {
+
+      const arraySearch = filterPokemonsNames(searchTerm)
+      const pokemons = await getPokemonsByNames(arraySearch)
+      
+      if (!isCancelled) {
+        searchComplete(pokemons)
+        setLoading(false)
+      }
+    }
+
     if (searchTerm.trim() != '')
       fetchPokemonsByNames()
+
+    return () => {
+      isCancelled = true;
+    };
   }, [searchTerm]);
 
   function filterPokemonsNames(searchText: string): string[] {
